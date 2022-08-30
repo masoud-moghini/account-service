@@ -2,8 +2,12 @@ package org.acme;
 
 
 import javax.annotation.PostConstruct;
+import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonObjectBuilder;
+import javax.persistence.EntityManager;
+import javax.persistence.NoResultException;
+import javax.transaction.Transactional;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -11,15 +15,15 @@ import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
 import java.math.BigDecimal;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
 @Path("/accounts")
 public class AccountResource {
+
+    @Inject AccountRepository accountRepository;
     Set<Account> accounts = new HashSet<>();
-
-
-
 
     @Provider
     public static class ErrorMapper implements ExceptionMapper<Exception>{
@@ -42,17 +46,11 @@ public class AccountResource {
     }
     @PostConstruct
     public void setup() {
-        accounts.add(new Account(123456789L, 987654321L, "George Baird", new
-                BigDecimal("354.23")));
-        accounts.add(new Account(121212121L, 888777666L, "Mary Taylor", new
-                BigDecimal("560.03")));
-        accounts.add(new Account(545454545L, 222444999L, "Diana Rigg", new
-                BigDecimal("422.00")));
     }
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public Response allAccounts() {
-        return Response.status(200).entity(this.accounts).build();
+    public List<Account> allAccounts() {
+        return accountRepository.listAll();
     }
 
 
@@ -60,24 +58,43 @@ public class AccountResource {
     @Path("/{accountNumber}")
     @Produces(MediaType.APPLICATION_JSON)
     public Account getAccount(@PathParam("accountNumber") Long accountNumber) {
-        Optional<Account> response = accounts.stream()
-                .filter(acct -> acct.getAccountNumber().equals(accountNumber))
-                .findFirst();
-        return response.orElseThrow(()
-                -> new WebApplicationException("Account with id of " + accountNumber +
-                "does not exist.",404));
+        try{
+            return accountRepository.findByAccountNumber(accountNumber);
+        }catch (NoResultException nre){
+            throw new WebApplicationException("Account with "+accountNumber+" does not exist",404);
+        }
     }
 
 
     @POST
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
+    @Transactional
     public Response createAccount(Account account){
         if (account.getAccountNumber() == null){
             throw new WebApplicationException("Account id can not be null",400);
         }
-        accounts.add(account);
+        accountRepository.persist(account);
         return Response.status(201).entity(account).build();
+    }
+    @PUT()
+    @Path("/withdraw/{accountNumber}")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Transactional
+    public Account withdrawal(@PathParam("accountNumber") Long accountNumber,String amount){
+        Account entity = getAccount(accountNumber);
+        entity.withdrawFunds(new BigDecimal(amount));
+        return entity;
+    }
+
+    @PUT()
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Transactional
+    public Account update(Account account){
+        accountRepository.persist(account);
+        return account;
     }
 
 }

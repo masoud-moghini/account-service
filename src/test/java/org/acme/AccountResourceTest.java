@@ -1,8 +1,11 @@
 package org.acme;
 
 
+import io.quarkus.test.common.QuarkusTestResource;
+import io.quarkus.test.h2.H2DatabaseTestResource;
 import io.quarkus.test.junit.QuarkusTest;
 import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 
 
@@ -21,6 +24,7 @@ import static org.hamcrest.core.StringContains.containsString;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @QuarkusTest
+@QuarkusTestResource(H2DatabaseTestResource.class)
 public class AccountResourceTest {
     @Test
     void testRetrieveAll(){
@@ -28,9 +32,8 @@ public class AccountResourceTest {
             .when().get("/accounts")
             .then().statusCode(200)
                 .body(
-                        containsString("George Baird"),
-                        containsString("Mary Taylor"),
-                        containsString("Diana Rigg")
+                        containsString("Debbie Hall"),
+                        containsString("David Tennant")
                 )
                 .extract()
                 .response();
@@ -38,8 +41,9 @@ public class AccountResourceTest {
 
          List<Account> accounts = result.jsonPath().getList("$");
          assertThat(accounts,not(empty()));
-         assertThat(accounts,hasSize(4));
+         assertThat(accounts,hasSize(8));
     }
+
 
     @Test
     void testRetrieveAccount(){
@@ -56,7 +60,7 @@ public class AccountResourceTest {
 
     @Test
     void testCreationAccount(){
-        Account test = new Account(16511561L,87461651L,"Masoud Moghini",new BigDecimal("1264163"));
+        Account test = new Account();
         given().contentType(MediaType.APPLICATION_JSON)
                 .body(test)
                 .when()
@@ -78,4 +82,6 @@ public class AccountResourceTest {
         assertThat(accounts,not(empty()));
         assertThat(accounts.size(),equalTo(4));
     }
+
+
 }

@@ -1,22 +1,24 @@
 package org.acme;
 
+import io.quarkus.hibernate.orm.panache.PanacheEntity;
+
+import javax.persistence.*;
 import java.math.BigDecimal;
 
-public class Account {
+
+@Entity
+public class Account extends PanacheEntity {
+
+
+    @Id
+    @GeneratedValue
+    private Long id;
     public Long accountNumber;
     public Long customerNumber;
     public String customerName;
     public BigDecimal balance;
     public AccountStatus accountStatus = AccountStatus.OPEN;
-    public Account() {
-    }
-    public Account(Long accountNumber, Long customerNumber, String
-            customerName, BigDecimal balance) {
-        this.accountNumber = accountNumber;
-        this.customerNumber = customerNumber;
-        this.customerName = customerName;
-        this.balance = balance;
-    }
+
     public void markOverdrawn() {
         accountStatus = AccountStatus.OVERDRAWN;
     }

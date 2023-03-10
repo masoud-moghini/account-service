@@ -71,9 +71,9 @@ public class AccountResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @Transactional
     public Response createAccount(Account account){
-        if (account.getAccountNumber() == null){
+        /*if (account.getAccountNumber() == null){
             throw new WebApplicationException("Account id can not be null",400);
-        }
+        }*/
         accountRepository.persist(account);
         return Response.status(201).entity(account).build();
     }

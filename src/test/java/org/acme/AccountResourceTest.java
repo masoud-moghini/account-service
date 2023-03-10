@@ -41,19 +41,19 @@ public class AccountResourceTest {
 
          List<Account> accounts = result.jsonPath().getList("$");
          assertThat(accounts,not(empty()));
-         assertThat(accounts,hasSize(8));
+         assertThat(accounts,hasSize(9));
     }
 
 
     @Test
     void testRetrieveAccount(){
         Account result = given()
-                .when().get("/accounts/{accountNumber}","121212121")
+                .when().get("/accounts/{accountNumber}","123456789")
                 .then().statusCode(200)
                 .extract().as(Account.class);
-        assertThat(result.getCustomerName(),equalTo("Mary Taylor"));
-        assertThat(result.getAccountNumber(),equalTo(121212121L));
-        assertThat(result.getBalance(),equalTo(new BigDecimal("560.03")));
+        assertThat(result.getCustomerName(),equalTo("Debbie Hall"));
+        assertThat(result.getAccountNumber(),equalTo(123456789L));
+        assertThat(result.getBalance(),equalTo(new BigDecimal("550.78")));
         assertThat(result.getAccountStatus(),equalTo(AccountStatus.OPEN));
     }
 
@@ -75,12 +75,12 @@ public class AccountResourceTest {
                 .get("/accounts")
                 .then()
                 .statusCode(200)
-                .body(containsString("Masoud Moghini"))
+                .body(containsString("Debbie Hall"))
                 .extract().response();
 
         List<Account> accounts = result.jsonPath().getList("$");
         assertThat(accounts,not(empty()));
-        assertThat(accounts.size(),equalTo(4));
+        assertThat(accounts.size(),equalTo(9));
     }
 
 

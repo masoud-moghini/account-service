@@ -7,6 +7,6 @@ import javax.enterprise.context.ApplicationScoped;
 @ApplicationScoped
 public class AccountRepository implements PanacheRepository<Account> {
     public Account findByAccountNumber(Long accountNumber){
-        return find("accountNumber = ?",accountNumber).firstResult();
+        return find("accountNumber = ?1",accountNumber).firstResult();
     }
 }
